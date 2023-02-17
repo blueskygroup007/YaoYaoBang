@@ -21,6 +21,23 @@ import androidx.annotation.NonNull;
  */
 public class DrawSV extends SurfaceView implements SurfaceHolder.Callback {
 
+    /*
+     * 1.surfaceHolder.Callback是SurfaceView的回调,对应三个状态:created,changed,destroyed.
+     * 2.surfaceHolder的holder,是持有画板Canvas的对象,相当于mvp中的P.
+     * 3.HandlerThread可以做成异步,handler创建时(looper,callback),传入callback,此callback
+     *   为一个弱引用的新线程.
+     * 5.Handler创建时的(Looper),是指定接收消息的队列.如果不写,则使用当前线程的Looper.
+     */
+
+    /*-------------------------
+    * 1.获取分辨率,计算绘图点位
+    * 2.准备绘制数组(加入两端的黑屏,或绘制时,设置SendMessageDaley延时)
+    * 3.监听传感器(后续可加入陀螺仪来监测位移修正),计算刷新时长,最小为16.6ms(理想值,测量实际刷新间隔来确定)
+    * 4.绘制.
+    * 5.启动和停止方式的确定.
+    -------------------------*/
+
+
     private final int MSG_DRAW = 1;
 
     public DrawSV(Context context) {
@@ -51,6 +68,7 @@ public class DrawSV extends SurfaceView implements SurfaceHolder.Callback {
     public void surfaceCreated(@NonNull SurfaceHolder holder) {
         mHandlerThread = new HandlerThread(getClass().getSimpleName());
         mHandlerThread.start();
+
         mThreadHandler = new Handler(mHandlerThread.getLooper()) {
             @Override
             public void handleMessage(@NonNull Message msg) {
