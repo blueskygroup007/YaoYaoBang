@@ -26,6 +26,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mBtnStart.setOnClickListener(this);
         hideSystemUI();
         getDensity();
+        testFont("我");
+    }
+
+    private void testFont(String str) {
+        byte[] b = FontDecode.decode(str);
+        if (b != null) {
+            for (int i = 0; i < b.length; i++) {
+                System.out.println(Integer.toHexString(b[i]));
+            }
+        }
     }
 
 
@@ -56,6 +66,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
     }
 
+    /*
+    获取分辨率
+     */
     private void getDensity() {
         Display display = getWindowManager().getDefaultDisplay();
         DisplayMetrics metrics = new DisplayMetrics();
@@ -65,6 +78,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
         Log.d("第二种:", displayMetrics.toString());
 
+    }
+
+    /*
+    准备数组
+        1.
+     */
+/*    private <T> T[][] generateData(T[] sourece){
+    }*/
+    private byte[][] generateData() {
+        byte[][] data = new byte[64][16];
+
+
+        return data;
     }
 
     @Override
