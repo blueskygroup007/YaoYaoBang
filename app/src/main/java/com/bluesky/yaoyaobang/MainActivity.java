@@ -26,7 +26,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mBtnStart.setOnClickListener(this);
         hideSystemUI();
         getDensity();
-        testFont("我");
+        FontX fontX=new FontX(this);
+        fontX.resolveString("我爱中华");
     }
 
     private void testFont(String str) {
