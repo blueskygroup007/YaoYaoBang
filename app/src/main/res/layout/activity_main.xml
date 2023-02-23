@@ -9,29 +9,48 @@
     <com.bluesky.yaoyaobang.DrawSV
         android:id="@+id/sv_draw"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toTopOf="@id/sb_strength"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
-        />
-
-    <Button
-        android:id="@+id/btn_stop"
+    <TextView
+        android:id="@+id/tv_strength"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@color/black"
-        android:text="stop"
-        android:textColor="@color/white"
+        android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        tools:text="10" />
 
-    <Button
-        android:id="@+id/btn_start"
+    <SeekBar
+        android:id="@+id/sb_strength"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:max="10"
+        android:progress="10"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/tv_delay"
+        app:layout_constraintStart_toEndOf="@id/tv_strength" />
+
+    <TextView
+        android:id="@+id/tv_delay"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@color/black"
-        android:text="start"
-        android:textColor="@color/white"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/sb_delay"
+        app:layout_constraintStart_toEndOf="@id/sb_strength"
+        tools:text="5" />
+
+    <SeekBar
+        android:id="@+id/sb_delay"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:max="10"
+        android:progress="10"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/btn_stop" />
+        app:layout_constraintStart_toEndOf="@id/tv_delay" />
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -4,11 +4,11 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Rect;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Message;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
@@ -39,6 +39,12 @@ public class DrawSV extends SurfaceView implements SurfaceHolder.Callback {
 
 
     private final int MSG_DRAW = 1;
+    private byte[][] mPointArr = null;
+    private int mColumn = 0;
+    private boolean mDirection = true;
+    private int mMaxColumn = 16;
+    private int mMaxRow = 16;
+    private int mDelay = 5;
 
     public DrawSV(Context context) {
         super(context);
@@ -74,9 +80,18 @@ public class DrawSV extends SurfaceView implements SurfaceHolder.Callback {
             public void handleMessage(@NonNull Message msg) {
                 super.handleMessage(msg);
                 if (MSG_DRAW == msg.what) {
-                    //sendEmptyMessage(MSG_DRAW);
-                    doDraw();
-                    sendEmptyMessageDelayed(MSG_DRAW, 1000);
+                    if (mColumn >= 0 && mColumn < mMaxColumn) {
+                        doDraw();
+                    }
+                    if (mDirection) {
+                        if (++mColumn < mMaxColumn) {
+                            sendEmptyMessageDelayed(MSG_DRAW, mDelay);
+                        }
+                    } else {
+                        if (--mColumn >= 0) {
+                            sendEmptyMessageDelayed(MSG_DRAW, mDelay);
+                        }
+                    }
                 }
             }
         };
@@ -90,41 +105,74 @@ public class DrawSV extends SurfaceView implements SurfaceHolder.Callback {
 
     @Override
     public void surfaceDestroyed(@NonNull SurfaceHolder holder) {
-        flag = false;
+        stopDrawThread();
+
     }
 
     private SurfaceHolder mHolder;
     private HandlerThread mHandlerThread;
     private Handler mThreadHandler;
-    private boolean flag = true;
 
     private Canvas mCanvas;
     private Paint mPaint;
+    private Paint mPaintBlack;
+
+    int centerX;
+    int centerY;
+    int radius;
+    Rect rect;
+    Rect rectBlack;
 
     private void init() {
         mHolder = getHolder();
         mHolder.addCallback(this);
         mPaint = new Paint();
         mPaint.setColor(Color.WHITE);
+        mPaintBlack = new Paint();
+        mPaintBlack.setColor(Color.BLACK);
         setFocusable(true);
         setFocusableInTouchMode(true);
     }
 
-    private void doDraw() {
-        mCanvas = mHolder.lockCanvas();
+    public void setData(byte[][] pointArr) {
+        mPointArr = pointArr;
+    }
 
-        int centerX = 700;
-        int centerY = 60;
-        int radius = 60;
-        mCanvas.drawColor(Color.BLACK);
-        for (int j = 1; j <= 16; j++) {
-            mPaint.setColor(flag ? Color.BLACK : Color.WHITE);
-            mCanvas.drawCircle(centerX, centerY + 120 * j, radius, mPaint);
-            Log.d("doDraw:", "centerX=" + centerX + "centerY=" + centerY);
-            flag = !flag;
+
+    private void doDraw() {
+//        long startTime = System.currentTimeMillis();
+        mCanvas = mHolder.lockCanvas();
+        /*
+         * 优化绘制
+         * X1.黑点不画
+         * √2.不刷新黑屏,直接涂黑白点即可
+         */
+
+        //mCanvas.drawColor(Color.BLACK);
+        //mCanvas.drawRect(rectBlack, mPaintBlack);
+        if (mDirection) {
+            for (int j = 0; j < mMaxColumn; j++) {
+                if (mPointArr[j][mColumn] == 1) {
+                    mCanvas.drawCircle(centerX, centerY + radius * 2 * j, radius, mPaint);
+                } else {
+                    mCanvas.drawCircle(centerX, centerY + radius * 2 * j, radius, mPaintBlack);
+
+                }
+            }
+        } else {
+            for (int k = mMaxColumn - 1; k >= 0; k--) {
+                if (mPointArr[k][mColumn] == 1) {
+                    mCanvas.drawCircle(centerX, centerY + radius * 2 * k, radius, mPaint);
+                } else {
+                    mCanvas.drawCircle(centerX, centerY + radius * 2 * k, radius, mPaintBlack);
+                }
+            }
         }
 
         mHolder.unlockCanvasAndPost(mCanvas);
+/*        long endTime = System.currentTimeMillis();
+        long runTime = endTime - startTime;
+        Log.d("time", String.format("执行时长为 %d ms", runTime));*/
     }
 
     //启动线程
@@ -139,5 +187,35 @@ public class DrawSV extends SurfaceView implements SurfaceHolder.Callback {
         if (mHandlerThread.isAlive()) {
             mHandlerThread.quit();
         }
+    }
+
+    public void drawing(boolean direction) {
+        //如果方向与之前相反
+        if (direction != mDirection) {
+            if (mThreadHandler != null) {
+                mThreadHandler.removeMessages(MSG_DRAW);
+                mDirection = direction;
+                if (mDirection) {
+                    mColumn = 0;
+                } else {
+                    mColumn = mMaxColumn - 1;
+                }
+                //rect = new Rect(centerX - 60, centerY - 60, centerX + 60, centerY + 60);
+                mThreadHandler.sendEmptyMessage(MSG_DRAW);
+            }
+        }
+    }
+
+    public void setDelay(int delay) {
+        mDelay = delay;
+    }
+
+    public void setDensity(int width, int height) {
+        centerX = width / 2;
+        radius = height / 16 / 2;
+
+        centerY = radius / 2;
+        rect = new Rect(centerX - radius, centerY - radius, centerX + radius, centerY + radius);
+        rectBlack = new Rect(centerX - radius, 0, centerX + radius, 16 * radius * 2);
     }
 }

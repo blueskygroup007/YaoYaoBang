@@ -1,44 +1,52 @@
 package com.bluesky.yaoyaobang;
 
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.os.Bundle;
-import android.os.Handler;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
 import android.view.View;
-import android.widget.Button;
+import android.widget.SeekBar;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
-    private Button mBtnStop;
-    private Button mBtnStart;
+public class MainActivity extends AppCompatActivity implements SensorEventListener, SeekBar.OnSeekBarChangeListener {
     private DrawSV mSvDraw;
+    private TextView mTvStrength, mTvDelay;
+    private SeekBar mSbStrength, mSbDelay;
+    private int mStrength = 5;
+    private int mDelay = 5;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mSvDraw = findViewById(R.id.sv_draw);
-        mBtnStop = findViewById(R.id.btn_stop);
-        mBtnStart = findViewById(R.id.btn_start);
-        mBtnStop.setOnClickListener(this);
-        mBtnStart.setOnClickListener(this);
+        mTvStrength = findViewById(R.id.tv_strength);
+        mSbStrength = findViewById(R.id.sb_strength);
+        mTvDelay = findViewById(R.id.tv_delay);
+        mSbDelay = findViewById(R.id.sb_delay);
+
         hideSystemUI();
         getDensity();
-        FontX fontX=new FontX(this);
-        fontX.resolveString("我爱中华");
+        FontX fontX = new FontX(this);
+        byte[][] pointArr = fontX.resolveString("中");
+        mSvDraw.setData(pointArr);
+
+        mSbStrength.setOnSeekBarChangeListener(this);
+        mSbDelay.setOnSeekBarChangeListener(this);
+        sensorInit();
     }
 
-    private void testFont(String str) {
-        byte[] b = FontDecode.decode(str);
-        if (b != null) {
-            for (int i = 0; i < b.length; i++) {
-                System.out.println(Integer.toHexString(b[i]));
-            }
-        }
+    private void sensorInit() {
+        SensorManager sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        Sensor sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_FASTEST);
     }
-
 
     private void hideSystemUI() {
         // Enables regular immersive mode.
@@ -78,32 +86,52 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
         Log.d("第二种:", displayMetrics.toString());
-
-    }
-
-    /*
-    准备数组
-        1.
-     */
-/*    private <T> T[][] generateData(T[] sourece){
-    }*/
-    private byte[][] generateData() {
-        byte[][] data = new byte[64][16];
-
-
-        return data;
+        int width = metrics.widthPixels;
+        int height = metrics.heightPixels;
+        mSvDraw.setDensity(width, height);
     }
 
     @Override
-    public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.btn_stop:
-                mSvDraw.stopDrawThread();
-                break;
-            case R.id.btn_start:
-                mSvDraw.startDrawThread();
-                break;
-            default:
+    public void onSensorChanged(SensorEvent event) {
+        int sensorType = event.sensor.getType();
+        float[] values = event.values;
+        float x = values[0];
+        //float y = values[1];
+        //float z = values[2];
+        if (sensorType == Sensor.TYPE_ACCELEROMETER) {
+            if (Math.abs(x) > mStrength) {
+                //启动绘制
+                mSvDraw.drawing(x > 0);
+            }
         }
+
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+    }
+
+    @Override
+    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+        if (seekBar.getId() == R.id.sb_strength) {
+            mTvStrength.setText(String.format("强度:%d", progress));
+            mStrength = progress;
+        }
+        if (seekBar.getId() == R.id.sb_delay) {
+            mTvDelay.setText(String.format("延迟:%d", progress));
+            mDelay = progress;
+            mSvDraw.setDelay(mDelay);
+        }
+    }
+
+    @Override
+    public void onStartTrackingTouch(SeekBar seekBar) {
+
+    }
+
+    @Override
+    public void onStopTrackingTouch(SeekBar seekBar) {
+
     }
 }
