@@ -2,6 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+<!--    <uses-permission android:name="android.permission.BODY_SENSORS" />-->
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -10,13 +11,12 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.YaoYaoBang"
+        android:theme="@style/AppFullTheme"
 
         tools:targetApi="31">
         <activity
             android:name=".MainActivity"
-            android:exported="true"
-            >
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -27,6 +27,21 @@
                 android:name="android.app.lib_name"
                 android:value="" />
         </activity>
+
+
+        <!-- 告知 XXPermissions 当前项目已经适配了分区存储特性 -->
+        <!--        <meta-data
+                    android:name="ScopedStorage"
+                    android:value="true" />-->
+
+        <!--        如果当前项目没有适配这特性，那么这一步骤可以忽略
+
+                需要注意的是：这个选项是框架用于判断当前项目是否适配了分区存储，
+                需要注意的是，如果你的项目已经适配了分区存储特性，
+                可以使用 READ_EXTERNAL_STORAGE、WRITE_EXTERNAL_STORAGE 来申请权限，
+                如果你的项目还没有适配分区特性，就算申请了 READ_EXTERNAL_STORAGE、WRITE_EXTERNAL_STORAGE
+                权限也会导致无法正常读取外部存储上面的文件，如果你的项目没有适配分区存储，
+                请使用 MANAGE_EXTERNAL_STORAGE 来申请权限，这样才能正常读取外部存储上面的文件，-->
     </application>
 
 </manifest>

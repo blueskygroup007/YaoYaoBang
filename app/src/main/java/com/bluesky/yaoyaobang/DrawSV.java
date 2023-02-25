@@ -9,6 +9,7 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Message;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
@@ -140,39 +141,73 @@ public class DrawSV extends SurfaceView implements SurfaceHolder.Callback {
 
 
     private void doDraw() {
-//        long startTime = System.currentTimeMillis();
-        mCanvas = mHolder.lockCanvas();
+        long startTime = System.currentTimeMillis();
+        //mCanvas = mHolder.lockCanvas();
+        mCanvas=mHolder.lockHardwareCanvas();
         /*
          * 优化绘制
          * X1.黑点不画
          * √2.不刷新黑屏,直接涂黑白点即可
+         * √3.如果该点颜色与上一列相同,则不画.
          */
-
-        //mCanvas.drawColor(Color.BLACK);
-        //mCanvas.drawRect(rectBlack, mPaintBlack);
         if (mDirection) {
             for (int j = 0; j < mMaxColumn; j++) {
-                if (mPointArr[j][mColumn] == 1) {
+
+/*                if (mPointArr[j][mColumn] == 1) {
                     mCanvas.drawCircle(centerX, centerY + radius * 2 * j, radius, mPaint);
                 } else {
                     mCanvas.drawCircle(centerX, centerY + radius * 2 * j, radius, mPaintBlack);
+                }*/
 
+                //如果是第一列,或者当前点与上一列同色.(以后可能会在数组前后加两列黑点.)
+                if (mColumn == 0) {
+                    if (mPointArr[j][mColumn] == 1) {
+                        mCanvas.drawCircle(centerX, centerY + radius * 2 * j, radius, mPaint);
+                    } else {
+                        mCanvas.drawCircle(centerX, centerY + radius * 2 * j, radius, mPaintBlack);
+                    }
+                } else {
+                    if (mPointArr[j][mColumn] != mPointArr[j][mColumn - 1]) {
+                        if (mPointArr[j][mColumn] == 1) {
+                            mCanvas.drawCircle(centerX, centerY + radius * 2 * j, radius, mPaint);
+                        } else {
+                            mCanvas.drawCircle(centerX, centerY + radius * 2 * j, radius, mPaintBlack);
+                        }
+                    }
                 }
             }
         } else {
             for (int k = mMaxColumn - 1; k >= 0; k--) {
-                if (mPointArr[k][mColumn] == 1) {
+
+/*                if (mPointArr[k][mColumn] == 1) {
                     mCanvas.drawCircle(centerX, centerY + radius * 2 * k, radius, mPaint);
                 } else {
                     mCanvas.drawCircle(centerX, centerY + radius * 2 * k, radius, mPaintBlack);
+                }*/
+
+                if (mColumn == mMaxColumn - 1) {
+                    if (mPointArr[k][mColumn] == 1) {
+                        mCanvas.drawCircle(centerX, centerY + radius * 2 * k, radius, mPaint);
+                    } else {
+                        mCanvas.drawCircle(centerX, centerY + radius * 2 * k, radius, mPaintBlack);
+                    }
+                } else {
+                    if (mColumn == mMaxColumn || mPointArr[k][mColumn] != mPointArr[k][mColumn + 1]) {
+                        if (mPointArr[k][mColumn] == 1) {
+                            mCanvas.drawCircle(centerX, centerY + radius * 2 * k, radius, mPaint);
+                        } else {
+                            mCanvas.drawCircle(centerX, centerY + radius * 2 * k, radius, mPaintBlack);
+                        }
+                    }
                 }
             }
         }
 
         mHolder.unlockCanvasAndPost(mCanvas);
-/*        long endTime = System.currentTimeMillis();
+
+        long endTime = System.currentTimeMillis();
         long runTime = endTime - startTime;
-        Log.d("time", String.format("执行时长为 %d ms", runTime));*/
+        Log.d("time", String.format("%d列的执行时长为 %d ms", mColumn, runTime));
     }
 
     //启动线程

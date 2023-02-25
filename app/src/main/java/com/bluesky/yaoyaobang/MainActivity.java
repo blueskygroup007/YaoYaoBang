@@ -11,8 +11,16 @@ import android.view.Display;
 import android.view.View;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.hjq.permissions.OnPermissionCallback;
+import com.hjq.permissions.Permission;
+import com.hjq.permissions.XXPermissions;
+
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener, SeekBar.OnSeekBarChangeListener {
     private DrawSV mSvDraw;
@@ -32,7 +40,18 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         mSbDelay = findViewById(R.id.sb_delay);
 
         hideSystemUI();
+/*        View decorView = getWindow().getDecorView();
+        decorView.setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener() {
+            @Override
+            public void onSystemUiVisibilityChange(int visibility) {
+                if ((visibility & View.SYSTEM_UI_FLAG_FULLSCREEN)==0){
+                    hideSystemUI();
+                }
+            }
+        });*/
+
         getDensity();
+        //getPermissions();
         FontX fontX = new FontX(this);
         byte[][] pointArr = fontX.resolveString("中");
         mSvDraw.setData(pointArr);
@@ -42,10 +61,27 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         sensorInit();
     }
 
+    private void getPermissions() {
+        XXPermissions.with(this)
+                .permission(Permission.BODY_SENSORS)
+                .request(new OnPermissionCallback() {
+                    @Override
+                    public void onGranted(@NonNull List<String> permissions, boolean allGranted) {
+                        Toast.makeText(MainActivity.this, "获取传感器权限成功", Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onDenied(@NonNull List<String> permissions, boolean doNotAskAgain) {
+                        Toast.makeText(MainActivity.this, "获取传感器权限失败", Toast.LENGTH_SHORT).show();
+
+                    }
+                });
+    }
+
     private void sensorInit() {
         SensorManager sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         Sensor sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_FASTEST);
+        sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_GAME);
     }
 
     private void hideSystemUI() {
@@ -63,6 +99,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                         // Hide the nav bar and status bar
                         | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                         | View.SYSTEM_UI_FLAG_FULLSCREEN);
+
+
     }
 
     // Shows the system bars by removing all the flags

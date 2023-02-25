@@ -13,4 +13,13 @@
         <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
         <!-- Customize your theme here. -->
     </style>
+
+    <!--该自定义样式,能在下拉系统菜单后,还是全屏-->
+    <style name="AppFullTheme" parent="Theme.YaoYaoBang">
+        <item name="android:windowTranslucentNavigation">true</item>
+        <item name="android:windowFullscreen">true</item>
+        <!--控制刘海处显示信息,需要sdk27-->
+        <!--<item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>-->
+    </style>
+
 </resources>
