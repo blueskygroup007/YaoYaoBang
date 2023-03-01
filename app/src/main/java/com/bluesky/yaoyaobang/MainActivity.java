@@ -5,6 +5,7 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
@@ -21,13 +22,19 @@ import com.hjq.permissions.Permission;
 import com.hjq.permissions.XXPermissions;
 
 import java.util.List;
+import java.util.Vector;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener, SeekBar.OnSeekBarChangeListener {
     private DrawSV mSvDraw;
     private TextView mTvStrength, mTvDelay;
     private SeekBar mSbStrength, mSbDelay;
-    private int mStrength = 5;
+    private int mStrength = 10;
     private int mDelay = 5;
+
+    private static final int FORWARD=1;
+    private static final int BACKWARD=-1;
+    private static final int ORIGINAL=0;
+    private int mDirection = ORIGINAL;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -129,17 +136,24 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         mSvDraw.setDensity(width, height);
     }
 
+
     @Override
     public void onSensorChanged(SensorEvent event) {
-        int sensorType = event.sensor.getType();
-        float[] values = event.values;
-        float x = values[0];
-        //float y = values[1];
-        //float z = values[2];
-        if (sensorType == Sensor.TYPE_ACCELEROMETER) {
-            if (Math.abs(x) > mStrength) {
-                //启动绘制
-                mSvDraw.drawing(x > 0);
+        long start = System.currentTimeMillis();
+
+        float x = event.values[0];
+
+
+        if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER && Math.abs(x) > mStrength) {
+
+            //判断方向,不同向则赋值记录当前方向.(DrawSV里面也判断方向了.但是应该放在这里,去掉重复判断)
+            int currentDirection=x>0?FORWARD:BACKWARD;
+            //加一个延时,很短时间内,方向改变,不调用绘制.
+            //或者:来两到三次同一方向,才绘制
+            if (currentDirection != mDirection) {
+                Log.d("方向:", String.format("temp=%d,mDirection=%d", currentDirection, mDirection));
+                mDirection = currentDirection;
+                mSvDraw.drawing(x > 0, start);
             }
         }
 

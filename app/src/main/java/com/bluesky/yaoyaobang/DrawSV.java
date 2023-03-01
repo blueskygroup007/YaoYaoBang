@@ -8,6 +8,7 @@ import android.graphics.Rect;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Message;
+import android.os.SystemClock;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.SurfaceHolder;
@@ -141,9 +142,9 @@ public class DrawSV extends SurfaceView implements SurfaceHolder.Callback {
 
 
     private void doDraw() {
-        long startTime = System.currentTimeMillis();
+        long currentTimeMillis = System.currentTimeMillis();
         //mCanvas = mHolder.lockCanvas();
-        mCanvas=mHolder.lockHardwareCanvas();
+        mCanvas = mHolder.lockHardwareCanvas();
         /*
          * 优化绘制
          * X1.黑点不画
@@ -204,9 +205,9 @@ public class DrawSV extends SurfaceView implements SurfaceHolder.Callback {
         }
 
         mHolder.unlockCanvasAndPost(mCanvas);
-
+        //SystemClock.uptimeMillis();
         long endTime = System.currentTimeMillis();
-        long runTime = endTime - startTime;
+        long runTime = endTime - currentTimeMillis;
         Log.d("time", String.format("%d列的执行时长为 %d ms", mColumn, runTime));
     }
 
@@ -224,11 +225,14 @@ public class DrawSV extends SurfaceView implements SurfaceHolder.Callback {
         }
     }
 
-    public void drawing(boolean direction) {
+    long startTime;
+
+    public void drawing(boolean direction, long start) {
+        startTime = start;
         //如果方向与之前相反
-        if (direction != mDirection) {
+//        if (direction != mDirection) {
             if (mThreadHandler != null) {
-                mThreadHandler.removeMessages(MSG_DRAW);
+                //mThreadHandler.removeMessages(MSG_DRAW);
                 mDirection = direction;
                 if (mDirection) {
                     mColumn = 0;
@@ -237,8 +241,10 @@ public class DrawSV extends SurfaceView implements SurfaceHolder.Callback {
                 }
                 //rect = new Rect(centerX - 60, centerY - 60, centerX + 60, centerY + 60);
                 mThreadHandler.sendEmptyMessage(MSG_DRAW);
+                Log.d("第一次时间:", String.format("%d ms", System.currentTimeMillis()-startTime));
+
             }
-        }
+//        }
     }
 
     public void setDelay(int delay) {
