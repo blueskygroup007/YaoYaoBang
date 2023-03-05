@@ -88,10 +88,21 @@ public class DrawSV extends SurfaceView implements SurfaceHolder.Callback {
                     if (mDirection) {
                         if (++mColumn < mMaxColumn) {
                             sendEmptyMessageDelayed(MSG_DRAW, mDelay);
+                        } else {
+                            //一个完整循环的时长
+                            long endTime = System.currentTimeMillis();
+                            long runTime = endTime - startTime;
+                            Log.d("time", String.format("整个循环的执行时长为 %d ms", runTime));
                         }
+
                     } else {
                         if (--mColumn >= 0) {
                             sendEmptyMessageDelayed(MSG_DRAW, mDelay);
+                        } else {
+                            long endTime = System.currentTimeMillis();
+                            long runTime = endTime - startTime;
+                            Log.d("time", String.format("整个循环的执行时长为 %d ms", runTime));
+
                         }
                     }
                 }
@@ -208,7 +219,7 @@ public class DrawSV extends SurfaceView implements SurfaceHolder.Callback {
         //SystemClock.uptimeMillis();
         long endTime = System.currentTimeMillis();
         long runTime = endTime - currentTimeMillis;
-        Log.d("time", String.format("%d列的执行时长为 %d ms", mColumn, runTime));
+        //Log.d("time", String.format("%d列的执行时长为 %d ms", mColumn, runTime));
     }
 
     //启动线程
@@ -229,8 +240,8 @@ public class DrawSV extends SurfaceView implements SurfaceHolder.Callback {
 
     public void drawing(boolean direction, long start) {
         startTime = start;
-        //如果方向与之前相反
-//        if (direction != mDirection) {
+        //如果方向与之前相反,则绘制.否则是同一方向的重复绘制调用.
+        if (direction != mDirection) {
             if (mThreadHandler != null) {
                 //mThreadHandler.removeMessages(MSG_DRAW);
                 mDirection = direction;
@@ -241,10 +252,10 @@ public class DrawSV extends SurfaceView implements SurfaceHolder.Callback {
                 }
                 //rect = new Rect(centerX - 60, centerY - 60, centerX + 60, centerY + 60);
                 mThreadHandler.sendEmptyMessage(MSG_DRAW);
-                Log.d("第一次时间:", String.format("%d ms", System.currentTimeMillis()-startTime));
+                Log.d("第一次时间:", String.format("%d ms", System.currentTimeMillis() - startTime));
 
             }
-//        }
+        }
     }
 
     public void setDelay(int delay) {

@@ -31,9 +31,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private int mStrength = 10;
     private int mDelay = 5;
 
-    private static final int FORWARD=1;
-    private static final int BACKWARD=-1;
-    private static final int ORIGINAL=0;
+    private static final int FORWARD = 1;
+    private static final int BACKWARD = -1;
+    private static final int ORIGINAL = 0;
     private int mDirection = ORIGINAL;
 
     @Override
@@ -137,23 +137,54 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
 
+    private int sensorCount = 0;
+    private int directionCount = 0;
+    private float directionX = 0;
+    private float relativeX = 0;
+
     @Override
     public void onSensorChanged(SensorEvent event) {
         long start = System.currentTimeMillis();
 
         float x = event.values[0];
-
-
-        if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER && Math.abs(x) > mStrength) {
+        float y = event.values[1];
+/*        if (sensorCount < 100) {
+            Log.d("传感器数据:", String.format("X=%f  Y=%f", x, y));
+        }*/
+        //旧方案
+/*        if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER && Math.abs(x) > mStrength) {
 
             //判断方向,不同向则赋值记录当前方向.(DrawSV里面也判断方向了.但是应该放在这里,去掉重复判断)
-            int currentDirection=x>0?FORWARD:BACKWARD;
+            int currentDirection = x > 0 ? FORWARD : BACKWARD;
             //加一个延时,很短时间内,方向改变,不调用绘制.
             //或者:来两到三次同一方向,才绘制
             if (currentDirection != mDirection) {
                 Log.d("方向:", String.format("temp=%d,mDirection=%d", currentDirection, mDirection));
                 mDirection = currentDirection;
                 mSvDraw.drawing(x > 0, start);
+            }
+        }*/
+
+        //新方案
+        if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+
+            int currentDirection = x > 0 ? FORWARD : BACKWARD;
+            //当方向连续相同,且X方向上间隔值>1.则计数.
+            //应加入判定:当当前绘制进行中,则不绘制.
+            if (currentDirection == mDirection && Math.abs(x - directionX) > 1) {
+                Log.d("传感器数据:", String.format("X=%f  Y=%f", x, y));
+
+                //relativeX = Math.abs(x - directionX);
+                directionCount++;
+                directionX=x;
+                if (directionCount >= 2) {
+                    //连续三次,X方向都以0.2的幅度增加,触发绘制
+                    mSvDraw.drawing(x > 0, start);
+                    directionCount = 0;
+                }
+            } else {
+                directionCount = 0;
+                mDirection = currentDirection;
             }
         }
 
@@ -186,4 +217,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public void onStopTrackingTouch(SeekBar seekBar) {
 
     }
+
+
 }
