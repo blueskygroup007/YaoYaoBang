@@ -1,3 +1,32 @@
 1.perfetto来收集性能信息,监测绘制详情.
 2.cavans的硬件加速获取:两种方式.一种是lockHardwareCanvas()方法.一种是用第三方库android-openGL-canvas
 3.android studio的快速编译设置.
+
+
+无线调试命令行方法:
+Android 手机需要是 Android 11 以上系统；
+电脑上的 Android SDK 工具需要 ≥ 30.0.0 版本，确认方式是：adb --version >30
+
+Android Debug Bridge version 1.0.41
+Version 31.0.0-7110759
+Installed as F:\AndroidSDK\platform-tools\adb.exe
+
+
+1.输入：adb pair 192.168.31.108:41865
+
+2.Enter pairing code输入 139422
+
+Successfully paired to 192.168.31.108:38529 [guid=adb-39d97fdf-HzldeT]
+
+
+
+git代理设置与取消:
+git config --global http.proxy 127.0.0.1:8889
+git config --global https.proxy https://127.0.0.1:8889
+git config --global http.proxy 'socks5://127.0.0.1:1089'
+git config --global https.proxy 'socks5://127.0.0.1:1089'
+
+git config --global --unset http.proxy
+git config --global --unset https.proxy
+
+可以考虑转到gitee仓库

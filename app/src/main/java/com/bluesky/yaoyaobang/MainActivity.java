@@ -5,7 +5,6 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
@@ -22,7 +21,6 @@ import com.hjq.permissions.Permission;
 import com.hjq.permissions.XXPermissions;
 
 import java.util.List;
-import java.util.Vector;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener, SeekBar.OnSeekBarChangeListener {
     private DrawSV mSvDraw;
@@ -136,11 +134,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         mSvDraw.setDensity(width, height);
     }
 
-
-    private int sensorCount = 0;
+//定义一些常量和变量
+    //方向计数
     private int directionCount = 0;
-    private float directionX = 0;
+    //上一次的X轴加速值
+    private float direction_pre_X = 0;
     private float relativeX = 0;
+    //方向步进
+    private int direction_step=1;
 
     @Override
     public void onSensorChanged(SensorEvent event) {
@@ -148,9 +149,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         float x = event.values[0];
         float y = event.values[1];
-/*        if (sensorCount < 100) {
-            Log.d("传感器数据:", String.format("X=%f  Y=%f", x, y));
-        }*/
+
         //旧方案
 /*        if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER && Math.abs(x) > mStrength) {
 
@@ -171,12 +170,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             int currentDirection = x > 0 ? FORWARD : BACKWARD;
             //当方向连续相同,且X方向上间隔值>1.则计数.
             //应加入判定:当当前绘制进行中,则不绘制.
-            if (currentDirection == mDirection && Math.abs(x - directionX) > 1) {
+            if (currentDirection == mDirection && Math.abs(x - direction_pre_X) > direction_step) {
                 Log.d("传感器数据:", String.format("X=%f  Y=%f", x, y));
 
-                //relativeX = Math.abs(x - directionX);
                 directionCount++;
-                directionX=x;
+                direction_pre_X =x;
                 if (directionCount >= 2) {
                     //连续三次,X方向都以0.2的幅度增加,触发绘制
                     mSvDraw.drawing(x > 0, start);
